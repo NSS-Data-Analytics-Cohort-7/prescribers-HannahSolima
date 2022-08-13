@@ -87,13 +87,7 @@ ORDER BY total_drug_cost DESC;
 ---ANSWER: PIRENIDONE, 2829174.30 (total_drug_cost) ... with SUM it's INSULIN
 
 ---QUESTION 3.b 
-SELECT generic_name, ROUND((MAX(total_drug_cost/p.total_day_supply,2) AS daily_cost
-FROM drug AS d
-JOIN prescription AS p
-USING (drug_name)
-GROUP BY generic_name
-ORDER BY daily_cost DESC;
----ANSWER: "IMMUN GLOB G(IGG)/GLY/IGA OV50", 7141.11 (daily cost)... SUM "C1 ESTERASE INHIBITOR"
+                                                    
 ---
 SELECT generic_name, ROUND((SUM(total_drug_cost)/SUM(p.total_day_supply)),2) AS daily_cost
 FROM drug AS d
@@ -101,8 +95,9 @@ JOIN prescription AS p
 USING (drug_name)
 GROUP BY generic_name
 ORDER BY daily_cost DESC;
----SUM VERSION                            
-                            
+---SUM VERSION
+
+                                                       
 ---QUESTION 4.a
 SELECT drug_name, 
 (CASE WHEN opioid_drug_flag = 'Y' 
@@ -111,7 +106,7 @@ SELECT drug_name,
     THEN 'antibiotic' 
  ELSE 'NEITHER' END) AS drug_type
 FROM drug AS d;
-
+                        
 ---QUESTION 4.b 
 SELECT (CASE WHEN opioid_drug_flag = 'Y' THEN 'opioid'
  WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic' 
@@ -124,10 +119,10 @@ ORDER BY drug_cost DESC;
 ---ANSWER: Opioid, $105M
 
 ---QUESTION 5.a
-SELECT COUNT(*)
+SELECT DISTINCT cbsaname
 FROM cbsa
 WHERE cbsaname LIKE '%TN%';
----ANSWER: 56
+---ANSWER: 10
 
 ---QUESTION 5.b
 SELECT cbsaname, SUM(population) AS pop
@@ -140,7 +135,26 @@ ORDER BY pop DESC;
 ---Morristown,TN, 116352 (smallest)
                             
 ---QUESTION 5.c
-
+SELECT fc.county AS county_name, SUM(p.population) AS total_pop
+FROM population AS p
+LEFT JOIN cbsa AS c
+USING (fipscounty)  
+JOIN fips_county AS fc
+ON fc.fipscounty = p.fipscounty                            
+WHERE c.fipscounty IS NULL
+GROUP BY county_name                            
+ORDER BY total_pop DESC;
+                                                                                                                                      
+---QUESTION 6.a
                             
+
+             
+                            
+                            
+                            
+
+
+
+
 
 
