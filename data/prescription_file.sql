@@ -69,35 +69,32 @@ ORDER BY claim_count DESC;
 ---ANSWER: Nurse Practitioner, 900845 (claim_count)
 
 ---QUESTION 2.c (challenge question)
-SELECT p1.specialty_description
+SELECT p1.specialty_description, SUM(p2.total_claim_count) AS TCC
 FROM prescriber AS p1
 LEFT JOIN prescription AS p2 
 ON p1.npi = p2.npi
-WHERE p2.npi IS NULL
-GROUP BY p1.specialty_description;
----ANSWER: 92 specialities? 
+GROUP BY p1.specialty_description
+ORDER BY TCC DESC;
+---ANSWER: 15 specialities? 
 
 ---QUESTION 3.a 
-SELECT generic_name, ROUND(MAX(total_drug_cost),2) AS total_drug_cost
+SELECT generic_name, ROUND(SUM(total_drug_cost),2) AS total_drug_cost
 FROM drug AS d
 JOIN prescription AS p
 USING (drug_name)
 GROUP BY generic_name
 ORDER BY total_drug_cost DESC;
----ANSWER: PIRENIDONE, 2829174.30 (total_drug_cost) ... with SUM it's INSULIN
+---ANSWER: INSULIN, 104264066.35 (total_drug_cost)
 
 ---QUESTION 3.b 
-                                                    
----
 SELECT generic_name, ROUND((SUM(total_drug_cost)/SUM(p.total_day_supply)),2) AS daily_cost
 FROM drug AS d
 JOIN prescription AS p
 USING (drug_name)
 GROUP BY generic_name
 ORDER BY daily_cost DESC;
----SUM VERSION
-
-                                                       
+---ANSWER: C1 ESTERASE INHIBITOR, 3495.22 (daily cost)
+                                                     
 ---QUESTION 4.a
 SELECT drug_name, 
 (CASE WHEN opioid_drug_flag = 'Y' 
@@ -146,15 +143,73 @@ GROUP BY county_name
 ORDER BY total_pop DESC;
                                                                                                                                       
 ---QUESTION 6.a
-                            
+SELECT drug_name, total_claim_count
+FROM prescription
+WHERE total_claim_count >=3000
+GROUP BY drug_name, total_claim_count
+ORDER BY total_claim_count DESC;
+---ANSWER: 9 rows 
 
-             
-                            
-                            
-                            
+---QUESTION 6.b 
+SELECT drug_name, total_claim_count
+FROM prescription
+JOIN drug 
+USING (drug_name)
+WHERE total_claim_count >=3000 AND opioid_drug_flag = 'Y'   
+GROUP BY drug_name, total_claim_count
+ORDER BY total_claim_count DESC;   
+---ANSWER: OXYCODONE HCL (4538), HYDROCODONE-ACE (3376)
 
+---QUESTION 6.b
+SELECT drug_name, total_claim_count,
+(CASE WHEN opioid_drug_flag = 'Y' THEN 'opioid' ELSE 'NO' END) AS opioid
+FROM prescription
+JOIN drug 
+USING (drug_name)
+WHERE total_claim_count >=3000
+ORDER BY total_claim_count DESC;
+---same as above but also includes those that are not opioids
 
+---QUESTION 6.c 
+SELECT p2.drug_name, total_claim_count, nppes_provider_first_name, 
+nppes_provider_last_org_name, 
+(CASE WHEN opioid_drug_flag = 'Y' THEN 'opioid' ELSE 'NO' END) AS opioid
+FROM prescriber AS p1
+JOIN prescription AS p2
+USING (npi)
+JOIN drug AS d
+USING (drug_name)
+WHERE total_claim_count >=3000
+ORDER BY total_claim_count DESC;
+---ANSWER: TABLE SHOWN? :)
 
+---QUESTION 7.a
+SELECT npi, drug_name
+FROM prescriber
+JOIN prescription
+USING (npi)
+JOIN drug
+USING (drug_name)
+WHERE nppes_provider_city = 'NASHVILLE' AND specialty_description LIKE '%Pain Management%' AND opioid_drug_flag = 'Y'
 
+---QUESTION 7.b
+SELECT npi, drug_name, SUM(total_claim_count) AS claim_count
+FROM prescriber
+JOIN prescription
+USING (npi)
+JOIN drug
+USING (drug_name)
+WHERE nppes_provider_city = 'NASHVILLE' AND specialty_description LIKE '%Pain Management%' AND opioid_drug_flag = 'Y'
+GROUP BY npi, drug_name
+ORDER BY claim_count DESC;
 
-
+---QUESTION 7.c
+SELECT npi, drug_name, SUM(total_claim_count) AS claim_count
+FROM prescriber
+JOIN prescription
+USING (npi)
+JOIN drug
+USING (drug_name)
+WHERE nppes_provider_city = 'NASHVILLE' AND specialty_description LIKE '%Pain Management%' AND opioid_drug_flag = 'Y'
+GROUP BY npi, drug_name
+ORDER BY claim_count DESC;
