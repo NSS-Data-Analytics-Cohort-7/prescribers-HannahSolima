@@ -185,31 +185,25 @@ ORDER BY total_claim_count DESC;
 
 ---QUESTION 7.a
 SELECT npi, drug_name
-FROM prescriber
-JOIN prescription
-USING (npi)
-JOIN drug
-USING (drug_name)
+FROM prescriber 
+CROSS JOIN drug 
 WHERE nppes_provider_city = 'NASHVILLE' AND specialty_description LIKE '%Pain Management%' AND opioid_drug_flag = 'Y'
 
 ---QUESTION 7.b
-SELECT npi, drug_name, SUM(total_claim_count) AS claim_count
-FROM prescriber
-JOIN prescription
-USING (npi)
-JOIN drug
+SELECT p1.npi, d.drug_name, total_claim_count
+FROM prescriber AS p1
+CROSS JOIN drug AS d
+LEFT JOIN prescription AS p2
 USING (drug_name)
 WHERE nppes_provider_city = 'NASHVILLE' AND specialty_description LIKE '%Pain Management%' AND opioid_drug_flag = 'Y'
-GROUP BY npi, drug_name
-ORDER BY claim_count DESC;
+ORDER BY total_claim_count DESC;
 
 ---QUESTION 7.c
-SELECT npi, drug_name, SUM(total_claim_count) AS claim_count
-FROM prescriber
-JOIN prescription
-USING (npi)
-JOIN drug
+SELECT p1.npi, d.drug_name, COELESCEtotal_claim_count
+FROM prescriber AS p1
+CROSS JOIN drug AS d
+LEFT JOIN prescription AS p2
 USING (drug_name)
 WHERE nppes_provider_city = 'NASHVILLE' AND specialty_description LIKE '%Pain Management%' AND opioid_drug_flag = 'Y'
-GROUP BY npi, drug_name
-ORDER BY claim_count DESC;
+ORDER BY total_claim_count DESC;
+
