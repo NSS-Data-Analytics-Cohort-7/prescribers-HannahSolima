@@ -38,9 +38,8 @@ nppes_provider_last_org_name,
 specialty_description,
 SUM(total_claim_count) AS total_claim_count
 FROM prescriber AS p1
-LEFT JOIN prescription AS p2
+JOIN prescription AS p2
 ON p1.npi = p2.npi
-WHERE total_claim_count IS NOT NULL 
 GROUP BY p1.npi, 
 nppes_provider_first_name, 
 nppes_provider_last_org_name, 
@@ -85,21 +84,31 @@ JOIN prescription AS p
 USING (drug_name)
 GROUP BY generic_name
 ORDER BY total_drug_cost DESC;
----ANSWER: PIRENIDONE, 2829174.30 (total_drug_cost)
+---ANSWER: PIRENIDONE, 2829174.30 (total_drug_cost) ... with SUM it's INSULIN
 
 ---QUESTION 3.b 
-SELECT generic_name, ROUND(MAX(total_drug_cost/p.total_day_supply),2) AS daily_cost
+SELECT generic_name, ROUND((MAX(total_drug_cost/p.total_day_supply,2) AS daily_cost
 FROM drug AS d
 JOIN prescription AS p
 USING (drug_name)
 GROUP BY generic_name
 ORDER BY daily_cost DESC;
----ANSWER: "IMMUN GLOB G(IGG)/GLY/IGA OV50", 7141.11 (daily cost)
-
+---ANSWER: "IMMUN GLOB G(IGG)/GLY/IGA OV50", 7141.11 (daily cost)... SUM "C1 ESTERASE INHIBITOR"
+---
+SELECT generic_name, ROUND((SUM(total_drug_cost)/SUM(p.total_day_supply)),2) AS daily_cost
+FROM drug AS d
+JOIN prescription AS p
+USING (drug_name)
+GROUP BY generic_name
+ORDER BY daily_cost DESC;
+---SUM VERSION                            
+                            
 ---QUESTION 4.a
 SELECT drug_name, 
-(CASE WHEN opioid_drug_flag = 'Y' THEN 'opioid'
- WHEN antibiotic_drug_flag = 'Y' THEN 'antibiotic' 
+(CASE WHEN opioid_drug_flag = 'Y' 
+    THEN 'opioid'
+ WHEN antibiotic_drug_flag = 'Y'    
+    THEN 'antibiotic' 
  ELSE 'NEITHER' END) AS drug_type
 FROM drug AS d;
 
@@ -129,5 +138,9 @@ GROUP BY cbsaname
 ORDER BY pop DESC;
 ---ANSWER: "Nashville-Davidson--Murfreesboro--Franklin, TN", 1830410 (largest)
 ---Morristown,TN, 116352 (smallest)
+                            
+---QUESTION 5.c
+
+                            
 
 
